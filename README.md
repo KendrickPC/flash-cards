@@ -2,13 +2,13 @@ https://redux-toolkit.js.org/api/createslice
 
 https://redux.js.org/tutorials/fundamentals/part-3-state-actions-reducers
 
-Create a new file in the src/features/topics directory and name it topicsSlice.js
+### 6. Create a new file in the src/features/topics directory and name it topicsSlice.js
 
 6a. Is named topics.
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 export const topicsSlice = createSlice({
-  name: 'topics',
+name: 'topics',
 })
 ```
 
@@ -16,12 +16,12 @@ export const topicsSlice = createSlice({
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 export const topicsSlice = createSlice({
-  name: 'topics',
-  initialState: {
-    topics: {
-    // will eventually hold all topics keyed by id.
-    }
+name: 'topics',
+initialState: {
+  topics: {
+  // will eventually hold all topics keyed by id.
   }
+}
 })
 ```
 
@@ -29,21 +29,21 @@ export const topicsSlice = createSlice({
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 const topicsSlice = createSlice({
-  name: 'topics',
-  initialState: {
-    topics: {
-      // Will eventually hold all topics keyed by id
-    }
-  },
-  reducers: {
-    addTopic: (state, action) => {
-      state.topics[action.payload.id] = {
-        id: action.payload.id,
-        name: action.payload.name,
-        icon: action.payload.icon,
-      }
+name: 'topics',
+initialState: {
+  topics: {
+    // Will eventually hold all topics keyed by id
+  }
+},
+reducers: {
+  addTopic: (state, action) => {
+    state.topics[action.payload.id] = {
+      id: action.payload.id,
+      name: action.payload.name,
+      icon: action.payload.icon,
     }
   }
+}
 })
 ```
 
@@ -51,23 +51,23 @@ const topicsSlice = createSlice({
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 const topicsSlice = createSlice({
-  name: 'topics',
-  initialState: {
-    topics: {
-      // Will eventually hold all topics keyed by id
-    }
-  },
-  reducers: {
-    addTopic: (state, action) => {
-      // topics keyed by id
-      state.topics[action.payload.id] = {
-        id: action.payload.id,
-        name: action.payload.name,
-        icon: action.payload.icon,
-        quizIDs: [],
-      }
+name: 'topics',
+initialState: {
+  topics: {
+    // Will eventually hold all topics keyed by id
+  }
+},
+reducers: {
+  addTopic: (state, action) => {
+    // topics keyed by id
+    state.topics[action.payload.id] = {
+      id: action.payload.id,
+      name: action.payload.name,
+      icon: action.payload.icon,
+      quizIDs: [],
     }
   }
+}
 })
 ```
 
@@ -75,10 +75,10 @@ const topicsSlice = createSlice({
 ```javascript
 const selectTopics = (state) => state.topics.topics
 ```
-Export the selector as well as the action creators and reducer that your slice generates.
+6e. Export the selector as well as the action creators and reducer that your slice generates.
 ```javascript
 export const topicsSlice = createSlice({
-  ...
+...
 })
 
 export const selectTopics = (state) => state.topics.topics;
@@ -97,9 +97,9 @@ import { configureStore } from "@reduxjs/toolkit";
 import {topicsReducer } from "../features/topics/topicsSlice";
 
 export default configureStore({
-  reducer: {
-    topics: topicsReducer,
-  },
+reducer: {
+  topics: topicsReducer,
+},
 });
 ```
 
@@ -108,14 +108,60 @@ export default configureStore({
 ```javascript
 import { selectTopics } from "./topicsSlice";
 ```
- and use it to access all the topics in state, and replace the empty object currently assigned to topics with the topics in state.
+
+8b. Use it to access all the topics in state
 ```javascript
+import { useSelector } from 'react-redux';
+```
+
+8c. Replace the empty object currently assigned to topics with the topics in state.
+```javascript
+import { selectTopics } from "../features/topics/topicsSlice";
+// assigned to topics with topics in state
+// need to import useSelector and then call it in conjunction with our selector to access all the topics in state.
+const topics = useSelector(selectTopics)
 
 ```
 
+### 9. Hook the new topic form up to the action creators our slice generates. 
+In src/components/NewTopicForm.js, 
+9a. Import addTopic 
+Inside topicsSlice.js
 ```javascript
-
+export const { addTopic } = topicsSlice.actions;
 ```
+Then import addTopic into NewTopicForm.js
+```javascript
+import { addTopic } from '../features/topics/topicsSlice';
+```
+9b. dispatch it from the event handler that runs when the new topic form is submitted.
+
+Hint: You will need to import and call the useDispatch() method in order to dispatch actions to the store.
+```javascript
+import { dispatch } from 'react-redux';
+
+export default function NewTopicForm() {
+  const dispatch = useDispatch();
+  ...
+}
+```
+
+9c. Include the topic’s name in the action payload as well as an id property (generate a value for this property by calling uuidv4()) and an icon property.
+```javascript
+  const handleSubmit = (e) => {
+    ...
+    dispatch(addTopic( {id: uuidv4(), name: name, icon: icon } ))
+    // dispatch your add topic action here
+    history.push(ROUTES.topicsRoute());
+  };
+```
+
+Checkpoint: Verify that the code is working by filling out the form and submitting it. It should  redirect to the http://localhost:3000/topics page and a newly created topic should be there.
+
+
+
+
+
 
 ```javascript
 
