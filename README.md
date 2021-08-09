@@ -9,7 +9,7 @@
 6a. Is named topics.
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
-export const topicSlice = createSlice({
+export const topicsSlice = createSlice({
 name: 'topics',
 })
 ```
@@ -17,7 +17,7 @@ name: 'topics',
 6b. Has initial state consisting of an object that includes one property, topics, which corresponds to an empty object. This inner topics object will eventually hold all topics keyed by id.
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
-export const topicSlice = createSlice({
+export const topicsSlice = createSlice({
 name: 'topics',
 initialState: {
   topics: {
@@ -27,29 +27,34 @@ initialState: {
 })
 ```
 
-*6c. Has an addTopic action. You can expect the payload for this action to look like {id: '123456', name: 'name of topic', icon: 'icon url'}. Store these values in the state as a new topic object.
+6c. Has an addTopic action. You can expect the payload for this action to look like {id: '123456', name: 'name of topic', icon: 'icon url'}. Store these values in the state as a new topic object.
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 const topicSlice = createSlice({
-name: 'topics',
-initialState: {
-  topics: {
-    // Will eventually hold all topics keyed by id
-  }
-},
-reducers: {
-  addTopic: (state, action) => {
-    state.topics[action.payload.id] = {
-      id: action.payload.id,
-      name: action.payload.name,
-      icon: action.payload.icon,
+  name: 'topics',
+  initialState: {
+    topics: {
+      // Will eventually hold all topics keyed by id
+    }
+  },
+  reducers: {
+    addTopic: (state, action) => {
+      const { id, name, icon } = action.payload;
+      // topics keyed by id
+      state.topics[id] = {
+        id: id,
+        name: name,
+        icon,
+        quizIds: []
+      };
     }
   }
-}
 })
 ```
 
-6e. Each topic object added to the state should also have a quizIds property, which will correspond to an array containing the ids of each quiz associated with the topic. When a topic is first created, it won’t have any associated quizzes, but you should still create an empty quizIds array so that all topics in the state conform to the same shape.
+6e. Each topic object added to the state should also have a quizIds property, which will correspond to an array containing the ids of each quiz associated with the topic. 
+
+When a topic is first created, it won’t have any associated quizzes, but you should still create an empty quizIds array so that all topics in the state conform to the same shape.
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 const topicSlice = createSlice({
@@ -66,7 +71,8 @@ reducers: {
       id: action.payload.id,
       name: action.payload.name,
       icon: action.payload.icon,
-      quizIDs: [],
+      // quizIds property from 6e
+      quizIds: [],
     }
   }
 }
@@ -79,12 +85,15 @@ const selectTopics = (state) => state.topics.topics
 ```
 6e. Export the selector as well as the action creators and reducer that your slice generates.
 ```javascript
-export const topicSlice = createSlice({
+export const topicsSlice = createSlice({
 ...
 })
 
 export const selectTopics = (state) => state.topics.topics;
-export const topicsReducer = topicSlice.reducer;
+// action creators export
+export const { addTopic } = topicsSlice.action;
+// export reducer that our slice generates
+export default topicsSlice.reducer;
 ```
 
 ### 7. Add topics to the app’s store.
@@ -168,11 +177,11 @@ Checkpoint: Verify that the code is working by filling out the form and submitti
 
 10a. Create in the src/features/quizzes directory, create a new file containing a slice for quizzes that is named "quizzes".
 
-Create a new file in src/features/quizzes called quizzesSlice.js
+Create a new file in src/features/quizzes called quizSlice.js
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 
-export const quizzesSlice = createSlice({
+export const quizSlice = createSlice({
   name: 'quizzes',
 })
 ```
@@ -181,7 +190,7 @@ export const quizzesSlice = createSlice({
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 
-export const quizzesSlice = createSlice({
+export const quizSlice = createSlice({
   name: 'quizzes',
   initialState: {
     // This inner quizzes object will eventually hold all quizzes keyed by id.
@@ -194,7 +203,7 @@ export const quizzesSlice = createSlice({
 ```javascript
 import { createSlice } from "@reduxjs/toolkit";
 
-const quizzesSlice = createSlice({
+const quizSlice = createSlice({
   name: 'quizzes',
   initialState: {
     // This inner quizzes object will eventually hold all quizzes keyed by id.
@@ -216,10 +225,10 @@ const quizzesSlice = createSlice({
 
 10d. Export the selector as well as the action creators and reducer that your slice generates.
 ```javascript
-// In quizzesSlice.js
+// In quizSlice.js
 export const selectQuizzes = (state) => state.quizzes.quizzes;
-export const quizzesReducer = quizzesSlice.reducer;
-export const { addQuiz } = quizzesSlice.actions;
+export const quizzesReducer = quizSlice.reducer;
+export const { addQuiz } = quizSlice.actions;
 ```
 
 11a. Add an action to your topics slice
@@ -312,7 +321,7 @@ export const topicSlice = createSlice({
     addTopic: (state, action) => {
       ...
     },
-    addQuizIdtoTopicId: (state, action) => {
+    addQuizIdtoTopic: (state, action) => {
       // Hint: Use the payload’s topicId to find the correct topic in state, 
       state.topics[action.payload.topicId].quizIds.push(action.payload.id)
     }
@@ -322,7 +331,7 @@ export const topicSlice = createSlice({
 
 11e. Make sure to export this action creator for use elsewhere in the app.
 ```javascript
-export const { addTopic, addQuizIdToTopicId } = topicSlice.actions;
+export const { addTopic, addQuizIdToTopic } = topicSlice.actions;
 ```
 
 ### 12. Conceptually, the actions of creating a new quiz and associating it with its topic are a part of a single process. 
@@ -338,8 +347,17 @@ export const thunkActionCreator = (payload) => {
 };
 ```
 
-
-And your action creator will receive a payload of the form
+In quizSlice.js, after the quizSlice function, create a new function, and export it as follows:
+```javascript
+export const createNewQuizThunk = (payload) => {
+    return (dispatch) => {
+      // dispatch multiple actions here
+      // This action creator will receive a payload of the form
+      dispatch(addQuiz(payload));
+      dispatch(someAction());
+    };
+};
+```
 
 This new thunk action creator is the one that you will dispatch when a user creates a new quiz.
 ```javascript
@@ -350,21 +368,31 @@ This new thunk action creator is the one that you will dispatch when a user crea
   id: '789',
 }
 ```
-
+So the new thunk action creator is as follows: 
 ```javascript
-
+export const createNewQuizThunk = (payload) => {
+  return (dispatch) => {
+    // dispatch multiple actions here
+    dispatch(addQuiz(payload));
+    dispatch(addQuizIdToTopic( {topicId: payload.topicId, id: payload.id} ));
+  };
+};
 ```
 
-```javascript
+### 13. To test your work, you’ll need to connect your action creator to src/components/NewQuizForm and make that component work.
 
+13a. First, import your topics selector from your topics slice and replace assign a call to that selector to the variable topics (which is currently assigned an empty object).
+
+Hint: To use your selector you will need to call useSelector with the selector you defined in your topics slice.
+
+```javascript
+import { useSelect } from 'react-redux';
+import { selectTopics } from '../features/topics/topicSlice';
 ```
 
+13b. Inside NewQuizForm function, 
 ```javascript
-
-```
-
-```javascript
-
+const topics = useSelector
 ```
 
 ```javascript
