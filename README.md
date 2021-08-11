@@ -487,6 +487,18 @@ export default function NewQuizForm() {
 // TypeError: Cannot read property 'quizIds' of undefined
 ```
 
+Hmmm... Update store.js
+```javascript
+import { quizzesReducer } from "../features/quizzes/quizzesSlice";
+
+bleh() {
+  ...
+  quizzes: quizzesReducer,
+}
+```
+
+Now it should work.
+
 15a Lastly, import your selector in src/features/quizzes/Quizzes.js and src/features/quizzes/Quiz.js and make sure those components are displaying the correct data:
 ```javascript
 // In Quizzes.js
@@ -508,18 +520,94 @@ export default function Quiz() {
 ```
 
 
-### 16a in the src/features/cards directory, create a new file containing slice for cards that:
+In the src/features/cards directory, create a new file containing slice for cards that:
 
-Is named 'cards'
+16a. Is named 'cards' => create a file name cardsSlice.js in the appropriate folder. 
+```javascript
+import { createSlice } from "@reduxjs/toolkit";
+```
 
-Has initial state consisting of an object that includes one property, cards, which corresponds to an empty object. This inner cards object will eventually hold all cards keyed by id.
+16b. Has initial state consisting of an object that includes one property, cards, which corresponds to an empty object. This inner cards object will eventually hold all cards keyed by id.
+```javascript
+import { createSlice } from "@reduxjs/toolkit";
 
-Has an addCard action. This action will receive a payload of the form { id: '123', front: 'front of card', back: 'back of card'}.
+export const cardsSlice = createSlice({
+  name: 'cards',
+  initialState: {
+    cards: {
+      // will eventually hold all cards keyed by id.
+    }
+  }
+})
+```
+
+16c. Has an addCard action. This action will receive a payload of the form { id: '123', front: 'front of card', back: 'back of card'}.
+
+```javascript
+import { createSlice } from "@reduxjs/toolkit";
+
+export const cardsSlice = createSlice({
+  name: 'cards',
+  initialState: {
+    cards: {
+      // will eventually hold all cards keyed by id.
+    }
+  },
+  reducers: {
+    addCard: (state, action) => {
+      const { id, front, back } = action.payload;
+      state.cards[id] = {
+        id: id,
+        front: front,
+        back: back,
+      }
+    }
+  }
+})
 
 
+export const selectCards = (state) => state.cards.cards;
+export const { addCard } = cardsSlice.actions;
+export const cardsReducer = cardsSlice.reducer;
+```
+16d. Update store.js
+```javascript
+cards: cardsReducer,
+```
 
+17 Lastly, connect your addCard action creator to the new quiz form. In src/components/NewQuizForm, in the event handler that fires when the quiz form is submitted, iterate through the cards in that form’s local state, and for each one:
 
+dispatch your addCard action creator. You will have to generate an id for each card using uuidv4.
 
+Store the id you create for each card in the cardIds array we’ve provided for you.
+
+Remember, your action creator expects to receive a payload of the form { id: '123', front: 'front of card', back: 'back of card'}. You want to collect all the cardIds in an array so that you can pass them to the action creator that generates new quizzes. To use uuidv4 to create an id, call the function like so: uuidv4().
+
+```javascript
+    for (let card in cards) {
+      let cardId = uuidv4();
+      cardIds.push(cardId);
+      dispatch(addCard( { ...card, id: cardId} ))      
+    }
+```
+
+18 You previously passed an empty array for cardIds to the action creator that generates a new quiz. Now that you have written code to collect an array of all the cardIds created whenever the new quiz form is submitted, replace the empty array with this array of cardIds.
+
+To test that your code is working, create a new quiz with some cards. Navigate to that quiz from the /quizzes page, and verify that your cards show up. Flip them over by clicking on them to make sure that you’ve correctly captured all of the state belonging to each card.
+
+Basically, in Card.js
+```javascript
+
+const cards = {}
+```
+
+```javascript
+
+```
+
+```javascript
+
+```
 ```javascript
 
 ```
@@ -527,7 +615,13 @@ Has an addCard action. This action will receive a payload of the form { id: '123
 ```javascript
 
 ```
+```javascript
 
+```
+
+```javascript
+
+```
 ```javascript
 
 ```

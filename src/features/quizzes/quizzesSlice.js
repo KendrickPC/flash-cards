@@ -17,7 +17,7 @@ export const quizzesSlice = createSlice({
   }
 })
 
-export const newQuizAssociatingItsTopicThunk = (quiz) => {
+export const addQuizForTopicId = (quiz) => {
   const {topicId, id } = quiz;
   return (dispatch) => {
     // dispatch multiple actions here

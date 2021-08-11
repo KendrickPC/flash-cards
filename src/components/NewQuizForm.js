@@ -1,18 +1,11 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from "react-router-dom";
-
-import { newQuizAssociatingItsTopicThunk } from "../features/quizzes/quizzesSlice";
+import { addCard } from '../features/cards/cardsSlice.js';
+import { addQuizForTopicId } from "../features/quizzes/quizzesSlice";
 import { selectTopics } from '../features/topics/topicsSlice';
 import { v4 as uuidv4 } from "uuid";
 import ROUTES from "../app/routes";
-
-
-
-// import { addQuizIdToTopic } from "../features/";
-// import quiz thunk
-
-
 
 export default function NewQuizForm() {
   const [name, setName] = useState("");
@@ -30,12 +23,18 @@ export default function NewQuizForm() {
 
     const cardIds = [];
 
+    cards.forEach((card) => {
+      let cardId = uuidv4();
+      cardIds.push(cardId);
+      dispatch(addCard({ ...card, id: cardId }));
+    });
+
     // You’ll have to generate an id by calling uuidv4.
     // NOTE: You'll have to place the quizId variable above our dispatch call, or else it won't work properly
     let quizId = uuidv4();
 
     dispatch(
-      newQuizAssociatingItsTopicThunk({
+      addQuizForTopicId({
         name: name,
         topicId: topicId,
         cardIds: cardIds,
